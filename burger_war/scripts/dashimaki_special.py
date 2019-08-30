@@ -49,8 +49,12 @@ class hamBot(AbstractBurger):
 
     def randWalk(self):
         # if infront of space gostraight
-        if min( self.scan[:20] + self.scan[-20:] ) > 0.7:
-            return 0.2, 0
+        if len(self.scan) == 360:
+            forword_scan = self.scan[:20] + self.scan[-20:]
+            # drop too small value ex) 0.0
+            forword_scan = [x for x in forword_scan if x > 0.1]
+            if min(forword_scan) > 0.7:
+                return 0.2, 0
 
         # keep rand value 1sec(5frames)
         x_th_table = [ [0.2,-1], [0.2, 1], [0,1], [0,-1] ]
@@ -93,16 +97,16 @@ class hamBot(AbstractBurger):
             max_idx = g_raw_sum_conv.argmax()
             # at right
             if max_idx < 10:
-                th = 0.5
-                x = 0.2 
+                th = 0.3
+                x = 0. 
             # at center
             elif max_idx < 14:
-                th = 0
-                x = 0.2
+                th = 0.
+                x = 0.
             # at left
             else:
-                th = -0.5
-                x = 0.2
+                th = -0.3
+                x = 0.
         # no blue
         elif sum_mask < 30:
             x, th = self.randWalk()
@@ -113,15 +117,15 @@ class hamBot(AbstractBurger):
             # at right
             if max_idx < 10:
                 th = 0.5
-                x = 0.2 
+                x = 0.1 
             # at center
             elif max_idx < 14:
                 th = 0
-                x = 0.2
+                x = 0.1
             # at left
             else:
                 th = -0.5
-                x = 0.2
+                x = 0.1
 
         # debug view
         '''
@@ -136,7 +140,12 @@ class hamBot(AbstractBurger):
 
         return x, th
     def nearWall(self):
-        if len(self.scan) == 360 and min( self.scan[:20] + self.scan[-20:] ) < 0.3:
+        if not len(self.scan) == 360:
+            return False
+        forword_scan = self.scan[:20] + self.scan[-20:]
+        # drop too small value ex) 0.0
+        forword_scan = [x for x in forword_scan if x > 0.1]
+        if min(forword_scan) < 0.3:
             return True
         return False
 
@@ -172,7 +181,10 @@ class hamBot(AbstractBurger):
             r.sleep()
 
             # debug
-            print self.nearWall(), min( self.scan[:20] + self.scan[-20:] )
+            forword_scan = self.scan[:20] + self.scan[-20:]
+            # drop too small value ex) 0.0
+            forword_scan = [x for x in forword_scan if x > 0.1]
+            print self.nearWall(), forword_scan
 
 
 if __name__ == '__main__':
